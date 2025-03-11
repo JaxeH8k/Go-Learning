@@ -175,9 +175,9 @@ func main() {
 	deck := newDeck()
 	// // // Shuffle New Deck // // //
 	// seed a random num generator
-	seed := time.Now().UnixNano()
+	seed := uint64(time.Now().UnixNano())
 	// create a new PCG source with seed
-	pcg := rand.NewPCG(uint64(seed), uint64(seed))
+	pcg := rand.NewPCG(seed, seed)
 
 	// create a new rand instance using the pcg source
 	r := rand.New(pcg)
