@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"math/rand/v2"
 	"time"
 )
@@ -15,6 +14,13 @@ type Card struct {
 
 type Hand struct {
 	Cards []Card
+}
+
+// special card for when player has no cards and dies in war
+var cyanideCard = Card{
+	Value: -1,
+	Name:  "Cyanide Capsule",
+	Suit:  "☠️",
 }
 
 var player1 Hand
@@ -70,15 +76,10 @@ func dealCards(deck []Card) {
 
 func war() (string, []Card) {
 	fmt.Println("War has broke out!")
-	// simulate war
-	isConflict := 1
 	var winner string
-
+	isConflict := 1
 	p1 := []Card{}
 	p2 := []Card{}
-
-	p1CDraw := 4 // amount of cards to involved to play the war round
-	p2CDraw := 4 // this is dynamic in event they don't have enough cards to continue
 	round := 0
 
 	for isConflict == 1 {
@@ -86,45 +87,45 @@ func war() (string, []Card) {
 		fmt.Println("Round ", round)
 		// draw 4 cards from each player, 4th will be comparisson
 		// if players still don't have enough for the war play, use what they have
-		if len(player1.Cards) < 4 {
+		switch {
+		case len(player1.Cards) == 0:
+			p1 = append(p1, cyanideCard)
+			fmt.Println("Player1 consumed the cyanide capsule ", cyanideCard.Suit)
+			//log.Fatal("Player 2 Wins, Player 1 died in War")
+		case len(player1.Cards) > 0 && len(player1.Cards) < 4:
 			fmt.Println("Player 1 card count ", len(player1.Cards))
-			if len(player1.Cards) == 0 {
-				// player loses
-				log.Fatal("Player 2 Wins, Player 1 died in War")
-			}
-			// possible bug - if player has 0 cards, have to call the game
-			// take the rest of their cards
 			p1 = append(p1, player1.Cards[0:]...)
 			player1.Cards = []Card{}
-		} else {
+		default:
 			// draw 4 cards
-			p1 = append(p1, player1.Cards[0:p1CDraw]...) // slice out of range bug
-			player1.Cards = player1.Cards[p1CDraw:]
+			p1 = append(p1, player1.Cards[0:4]...) // slice out of range bug
+			player1.Cards = player1.Cards[4:]
 		}
-		if len(player2.Cards) < 4 {
+
+		switch {
+		case len(player2.Cards) == 0:
+			fmt.Println("Player2 consumed the cynanide capsule ", cyanideCard.Suit)
+			//log.Fatal("Player 1 Wins, Player 2 died in War")
+			p2 = append(p2, cyanideCard)
+		case len(player2.Cards) > 0 && len(player2.Cards) < 4:
 			fmt.Println("player 2 card count ", len(player2.Cards))
-			if len(player2.Cards) == 0 {
-				log.Fatal("Player 1 Wins, Player 2 died in War")
-			}
-			// same for player2 w/rt bug
-			//p2CDraw = len(player2.Cards) - 1
 			p2 = append(p2, player2.Cards[0:]...) // take rest of their cards
 			player2.Cards = []Card{}
-		} else {
-			// draw 4 cards
-			p2 = append(p2, player2.Cards[0:p2CDraw]...) // slice out of range bug
-			player2.Cards = player2.Cards[p2CDraw:]
+		default:
+			p2 = append(p2, player2.Cards[0:4]...) // slice out of range bug
+			player2.Cards = player2.Cards[4:]
 		}
+
 		// draw a 4th card from each player and compare value
 		if p1[len(p1)-1].Value > p2[len(p2)-1].Value {
 			// declare winner, end conflict
-			fmt.Printf("P1 %d | P2 %d\n", p1[len(p1)-1].Value, p2[len(p2)-1].Value)
+			//fmt.Printf("P1 %d | P2 %d\n", p1[len(p1)-1].Value, p2[len(p2)-1].Value)
 			winner = "p1"
 			isConflict = 0
 
 		}
 		if p1[len(p1)-1].Value < p2[len(p2)-1].Value {
-			fmt.Printf("P1 %d | P2 %d\n", p1[len(p1)-1].Value, p2[len(p2)-1].Value)
+			//fmt.Printf("P1 %d | P2 %d\n", p1[len(p1)-1].Value, p2[len(p2)-1].Value)
 			winner = "p2"
 			isConflict = 0
 		}
@@ -190,7 +191,9 @@ func main() {
 	//fmt.Println(player2.Cards)
 
 	winner := ""
+	rounds := 0
 	for winner == "" {
+		rounds++
 		play()
 		// determine winner if either of the player is out of cards
 		if len(player1.Cards) == 0 {
@@ -201,7 +204,7 @@ func main() {
 		}
 	}
 
-	fmt.Println(winner, " has won the game!")
+	fmt.Println(winner, " has won the game in ", rounds, " rounds!")
 	fmt.Println("Player 1 Cards: ", len(player1.Cards))
 	fmt.Println("Player 2 Cards: ", len(player2.Cards))
 }
