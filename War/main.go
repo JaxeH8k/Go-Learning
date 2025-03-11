@@ -84,7 +84,7 @@ func war() (string, []Card) {
 
 	for isConflict == 1 {
 		round++
-		fmt.Println("Round ", round)
+		fmt.Printf("War Round %d\n", round)
 		// draw 4 cards from each player, 4th will be comparisson
 		// if players still don't have enough for the war play, use what they have
 		switch {
@@ -194,6 +194,11 @@ func main() {
 	rounds := 0
 	for winner == "" {
 		rounds++
+		if rounds > 100000 {
+			fmt.Println("Deadlock Declared, No Winner")
+			winner = "Nobody"
+		}
+		fmt.Println("Round ", rounds)
 		play()
 		// determine winner if either of the player is out of cards
 		if len(player1.Cards) == 0 {
@@ -204,7 +209,7 @@ func main() {
 		}
 	}
 
-	fmt.Println(winner, " has won the game in ", rounds, " rounds!")
+	fmt.Println(winner, " won the game in ", rounds, " rounds!")
 	fmt.Println("Player 1 Cards: ", len(player1.Cards))
 	fmt.Println("Player 2 Cards: ", len(player2.Cards))
 }
