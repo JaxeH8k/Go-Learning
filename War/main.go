@@ -122,7 +122,6 @@ func war() (string, []Card) {
 			//fmt.Printf("P1 %d | P2 %d\n", p1[len(p1)-1].Value, p2[len(p2)-1].Value)
 			winner = "p1"
 			isConflict = 0
-
 		}
 		if p1[len(p1)-1].Value < p2[len(p2)-1].Value {
 			//fmt.Printf("P1 %d | P2 %d\n", p1[len(p1)-1].Value, p2[len(p2)-1].Value)
@@ -150,16 +149,19 @@ func play() {
 	var winner string
 	var cards []Card
 
-	if p1.Value > p2.Value {
-		// player 1 wins, move both cards to his discard.
+	switch {
+	case p1.Value > p2.Value: // player 1 wins
+		fmt.Printf("Player 1 wins:\t%s %s\t<=\t%s %s\n", p1.Suit, p1.Name, p2.Suit, p2.Name)
 		player1.Cards = append(player1.Cards, p1, p2)
-	}
-	if p1.Value < p2.Value {
-		// player 2 wins
+	case p1.Value < p2.Value: // player 2 wins
+		fmt.Printf("Player 2 wins:\t%s %s\t=>\t%s %s\n", p1.Suit, p1.Name, p2.Suit, p2.Name)
 		player2.Cards = append(player2.Cards, p1, p2)
-	}
-	if p1.Value == p2.Value {
+	case p1.Value == p2.Value: // tie / war()
+		fmt.Printf("War\t\t%s %s\t==\t%s %s\n", p1.Suit, p1.Name, p2.Suit, p2.Name)
 		winner, cards = war()
+		for _, c := range cards {
+			fmt.Printf("%s receives\t%s %s\n", winner, c.Suit, c.Name)
+		}
 		if winner == "p1" {
 			player1.Cards = append(player1.Cards, cards...)
 			player1.Cards = append(player1.Cards, p1, p2)
@@ -178,17 +180,12 @@ func main() {
 	seed := uint64(time.Now().UnixNano())
 	// create a new PCG source with seed
 	pcg := rand.NewPCG(seed, seed)
-
 	// create a new rand instance using the pcg source
 	r := rand.New(pcg)
-
 	r.Shuffle(len(deck), func(i, j int) { deck[i], deck[j] = deck[j], deck[i] })
 	// Deck has been shuffled
 
 	dealCards(deck)
-
-	//fmt.Println(player1.Cards)
-	//fmt.Println(player2.Cards)
 
 	winner := ""
 	rounds := 0
@@ -197,8 +194,9 @@ func main() {
 		if rounds > 100000 {
 			fmt.Println("Deadlock Declared, No Winner")
 			winner = "Nobody"
+			continue
 		}
-		fmt.Println("Round ", rounds)
+		//fmt.Println("Round ", rounds)
 		play()
 		// determine winner if either of the player is out of cards
 		if len(player1.Cards) == 0 {
@@ -210,6 +208,4 @@ func main() {
 	}
 
 	fmt.Println(winner, " won the game in ", rounds, " rounds!")
-	fmt.Println("Player 1 Cards: ", len(player1.Cards))
-	fmt.Println("Player 2 Cards: ", len(player2.Cards))
 }
